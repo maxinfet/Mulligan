@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.16
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mulligan", "Mulligan\Mulligan.csproj", "{FBD35EFC-E662-41EA-AEB9-EFB295E473FC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mulligan.Tests", "Mulligan.Tests\Mulligan.Tests.csproj", "{8A17E618-6E74-4FED-9B5D-0A8DEC3FEC0C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FBD35EFC-E662-41EA-AEB9-EFB295E473FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBD35EFC-E662-41EA-AEB9-EFB295E473FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBD35EFC-E662-41EA-AEB9-EFB295E473FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBD35EFC-E662-41EA-AEB9-EFB295E473FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A17E618-6E74-4FED-9B5D-0A8DEC3FEC0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A17E618-6E74-4FED-9B5D-0A8DEC3FEC0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A17E618-6E74-4FED-9B5D-0A8DEC3FEC0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A17E618-6E74-4FED-9B5D-0A8DEC3FEC0C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {55358B21-E183-49C9-8A9B-FE45672222F0}
+	EndGlobalSection
+EndGlobal
