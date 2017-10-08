@@ -1,5 +1,5 @@
 ### Introduction
-<p>Mulligan is a library that defines generic retry logic. This code is inspired by the retry code in [FlaUI](https://github.com/Roemer/FlaUI), [TestStack.White](https://github.com/TestStack/White) and some feed back from a co-worker.</p>
+<p>Mulligan is a library that defines generic retry logic. This code is inspired by the retry code in FlaUI, TestStack.White and some feed back from a co-worker.</p>
 
 
 ### Why would you need this?
