@@ -3,7 +3,7 @@
 
 
 ### Why would you need this?
-<p>The reason to use this is if you have code that is inherently temporal. For example when working with UI automation the UI will update at different speeds and you would want to be able to retry finding a control.</p>
+<p>The reason for using this is if your code is interacting with an entity that is timing based. For example when working with UI automation the UI will update at different speeds and you would want to be able to retry finding a control.</p>
 
 ### Usage
 This will retry the action until it passes or 1 second passes.
