@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mulligan.Models;
+using System;
 using System.Threading;
 
 namespace Mulligan
@@ -14,22 +15,43 @@ namespace Mulligan
         /// <param name="action">Action that will be retried</param>
         /// <param name="timeout">Time the action will be retried</param>
         /// <param name="retryInterval">Interval between retries</param>
-        public static void While(Action action, TimeSpan timeout, TimeSpan? retryInterval = null)
+        public static RetryResults While(Action action, TimeSpan timeout, TimeSpan? retryInterval = null)
         {
-            DateTime startTime = DateTime.Now;
+            DateTime start = DateTime.Now;
+            RetryResults results = new RetryResults();
 
             while (true)
             {
+                DateTime retryStart = DateTime.Now;
+
                 try
                 {
                     action();
-                    return;
+
+                    results.Retries.Add(new RetryResult()
+                    {
+                        Start = retryStart,
+                        Finish = DateTime.Now,
+                        Success = true
+                    });
+
+                    return results;
                 }
                 catch (Exception exception)
                 {
-                    if (IsTimedOut(startTime, timeout))
-                        throw new TimeoutException("Timeout occured while retrying", exception);
+                    results.Retries.Add(new RetryResult()
+                    {
+                        Start = retryStart,
+                        Finish = DateTime.Now,
+                        Exception = exception,
+                        Success = false
+                    });
 
+                    if (IsTimedOut(start, timeout))
+                        return results;
+                }
+                finally
+                {
                     Thread.Sleep(retryInterval ?? DefaultRetryInterval);
                 }
             }
@@ -38,27 +60,48 @@ namespace Mulligan
         /// <summary>
         /// Retries a function until the function succeeds or until timeout is reached.
         /// </summary>
-        /// <typeparam name="T">Return type of the function</typeparam>
+        /// <typeparam name="TResult">Return type of the function</typeparam>
         /// <param name="function">Function that will be retried</param>
         /// <param name="timeout">Time the action will be retried</param>
         /// <param name="retryInterval">Interval between retries</param>
         /// <returns>Return of the function</returns>
-        public static T While<T>(Func<T> function, TimeSpan timeout, TimeSpan? retryInterval = null)
+        public static RetryResults<TResult> While<TResult>(Func<TResult> function, TimeSpan timeout, TimeSpan? retryInterval = null)
         {
-            DateTime startTime = DateTime.Now;
+            DateTime start = DateTime.Now;
+            RetryResults<TResult> results = new RetryResults<TResult>();
 
             while (true)
             {
+                DateTime retryStart = DateTime.Now;
+
                 try
                 {
-                    return function();
+                    results.Retries.Add(new RetryResult<TResult>()
+                    {
+                        Start = retryStart,
+                        Finish = DateTime.Now,
+                        Result = function(),
+                        Success = true
+                    });
+
+                    return results;
                 }
                 catch (Exception exception)
                 {
-                    Thread.Sleep(retryInterval ?? DefaultRetryInterval);
+                    results.Retries.Add(new RetryResult<TResult>()
+                    {
+                        Start = retryStart,
+                        Finish = DateTime.Now,
+                        Exception = exception,
+                        Success = true
+                    });
 
-                    if (IsTimedOut(startTime, timeout))
-                        throw new TimeoutException("Timeout occured while retrying", exception);
+                    if (IsTimedOut(start, timeout))
+                        return results;
+                }
+                finally
+                {
+                    Thread.Sleep(retryInterval ?? DefaultRetryInterval);
                 }
             }
         }
@@ -66,33 +109,55 @@ namespace Mulligan
         /// <summary>
         /// Retries a function until the predicate evaluates false and the function succeeds or until timeout is reached.
         /// </summary>
-        /// <typeparam name="T">Return type of the function</typeparam>
+        /// <typeparam name="TResult">Return type of the function</typeparam>
         /// <param name="predicate">Predicate that evaluates the results of the function</param>
         /// <param name="function">Function that will be retried</param>
         /// <param name="timeout">Time the action will be retried</param>
         /// <param name="retryInterval">Interval between retries</param>
         /// <returns>Return of the function</returns>
-        public static T While<T>(Predicate<T> predicate, Func<T> function, TimeSpan timeout, TimeSpan? retryInterval = null)
+        public static RetryResults<TResult> While<TResult>(Predicate<TResult> predicate, Func<TResult> function, TimeSpan timeout, TimeSpan? retryInterval = null)
         {
-            DateTime startTime = DateTime.Now;
+            DateTime start = DateTime.Now;
+            RetryResults<TResult> results = new RetryResults<TResult>();
 
             while (true)
             {
+                DateTime retryStart = DateTime.Now;
+
                 try
                 {
-                    T result = function();
-                    if (!predicate(result))
-                        return result;
+                    TResult result = function();
 
-                    if (IsTimedOut(startTime, timeout))
-                        return result;
+                    results.Retries.Add(new RetryResult<TResult>()
+                    {
+                        Start = retryStart,
+                        Finish = DateTime.Now,
+                        Result = result,
+                        Success = true
+                    });
+
+                    if (!predicate(result))
+                        return results;
+
+                    if (IsTimedOut(start, timeout))
+                        return results;
                 }
                 catch (Exception exception)
                 {
-                    Thread.Sleep(retryInterval ?? DefaultRetryInterval);
+                    results.Retries.Add(new RetryResult<TResult>()
+                    {
+                        Start = retryStart,
+                        Finish = DateTime.Now,
+                        Exception = exception,
+                        Success = false
+                    });
 
-                    if (IsTimedOut(startTime, timeout))
-                        throw new TimeoutException("Timeout occured while retrying", exception);
+                    if (IsTimedOut(start, timeout))
+                        return results;
+                }
+                finally
+                {
+                    Thread.Sleep(retryInterval ?? DefaultRetryInterval);
                 }
             }
         }
@@ -100,35 +165,42 @@ namespace Mulligan
         /// <summary>
         /// Retries a function until the predicate evaluates false and the function succeeds or until timeout is reached.
         /// </summary>
-        /// <typeparam name="T">Return type of the function</typeparam>
+        /// <typeparam name="TResult">Return type of the function</typeparam>
         /// <param name="predicate">Predicate that evaluates the results of the function</param>
         /// <param name="function">Function that will be retried</param>
         /// <param name="tryCatchHandler">Custom exception handling for function</param>
         /// <param name="timeout">Time the action will be retried</param>
         /// <param name="retryInterval">Interval between retries</param>
         /// <returns>Return of the function</returns>
-        public static T While<T>(Predicate<T> predicate, Func<T> function, Func<Func<T>, T> tryCatchHandler, TimeSpan timeout, TimeSpan? retryInterval = null)
+        public static RetryResults<TResult> While<TResult>(Predicate<TResult> predicate, Func<TResult> function, Func<Func<TResult>, RetryResult<TResult>> tryCatchHandler, TimeSpan timeout, TimeSpan? retryInterval = null)
         {
-            DateTime startTime = DateTime.Now;
+            DateTime start = DateTime.Now;
+            RetryResults<TResult> results = new RetryResults<TResult>();
 
             while (true)
             {
-                T result = tryCatchHandler(function);
-                if (!predicate(result))
-                    return result;
+                DateTime retryStart = DateTime.Now;
 
-                if (IsTimedOut(startTime, timeout))
-                    return result;
+                RetryResult<TResult> result = tryCatchHandler(function);
+
+                results.Retries.Add(result);
+
+                if (!predicate(result.Result))
+                    return results;
+
+                if (IsTimedOut(start, timeout))
+                    return results;
+
+                Thread.Sleep(retryInterval ?? DefaultRetryInterval);
             }
         }
 
         private static bool IsTimedOut(DateTime startTime, TimeSpan timeout)
         {
             // Check for infinite timeout
-            if (timeout.TotalMilliseconds < 0)
-            {
+            if (timeout == TimeSpan.MaxValue)
                 return false;
-            }
+            
             return DateTime.Now.Subtract(startTime) >= timeout;
         }
     }
