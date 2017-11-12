@@ -172,7 +172,7 @@ namespace Mulligan
         /// <param name="timeout">Time the action will be retried</param>
         /// <param name="retryInterval">Interval between retries</param>
         /// <returns>Return of the function</returns>
-        public static RetryResults<TResult> While<TResult>(Predicate<TResult> predicate, Func<TResult> function, Func<Func<TResult>, RetryResult<TResult>> tryCatchHandler, TimeSpan timeout, TimeSpan? retryInterval = null)
+        public static RetryResults<TResult> While<TResult>(Predicate<TResult> predicate, Func<TResult> function, Func<Func<TResult> tryCatchHandler, RetryResult<TResult>> tryCatchHandler, TimeSpan timeout, TimeSpan? retryInterval = null)
         {
             DateTime start = DateTime.Now;
             RetryResults<TResult> results = new RetryResults<TResult>();
