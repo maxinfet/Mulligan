@@ -6,15 +6,17 @@
 <p>The reason for using this is if your code is interacting with an entity that is timing based. For example when working with UI automation the UI will update at different speeds and you would want to be able to retry finding a control.</p>
 
 ### Usage
-This will retry the action until it passes or 1 second passes.
+This will retry the action until it passes or 1 second passes. Then it will return a `RetryResult` that contains information about each retry that was attempted.
 ``` csharp
 Action action = () => //Do something
-Retry.While(function, TimeSpan.FromSeconds(1));
+RetryResult retryResult = Retry.While(function, TimeSpan.FromSeconds(1));
+int retryCount = retryResult.GetRetryCount();
 ```
 
-This will retry the function until the predicate evaluates false. The predicate should return true if you want to retry your function.
+This will retry the function until the predicate evaluates false. The predicate should return true if you want to retry your function. The `Retry.While` will then return a `RetryResult` that contains the result and information about each retry it attempted.
 ```csharp
 Func<T> function = () => //Do something
 Predicate<T> shouldRetry = resultOfFunction => //use the result of the function to evaluate if you should retry
-Retry.While(shouldRetry, function, TimeSpan.FromSeconds(1));
+RetryResult<T> retryResult = Retry.While(shouldRetry, function, TimeSpan.FromSeconds(1));
+T result = retryResult.GetResult();
 ```
