@@ -93,7 +93,7 @@ namespace Mulligan
                         Start = retryStart,
                         Finish = DateTime.Now,
                         Exception = exception,
-                        Success = true
+                        Success = false
                     });
 
                     if (IsTimedOut(start, timeout))
