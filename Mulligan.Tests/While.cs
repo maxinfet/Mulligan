@@ -15,7 +15,7 @@ namespace Mulligan.Tests
             int index = 0;
             List<int> list = new List<int>() {1, 2, 3};
 
-            Func<int> func = () =>
+            int Function()
             {
                 try
                 {
@@ -25,11 +25,11 @@ namespace Mulligan.Tests
                 {
                     index++;
                 }
-            };
+            }
 
-            Predicate<int> predicate = @int => @int != 3;
+            bool ShouldRetry(int @int) => @int != 3;
 
-            RetryResults<int> results = Retry.While(predicate, func, TimeSpan.FromSeconds(1));
+            RetryResults<int> results = Retry.While(ShouldRetry, Function, TimeSpan.FromSeconds(1));
 
             Assert.AreEqual(3, results.GetResult());
             Assert.AreEqual(3, results.GetRetryCount());

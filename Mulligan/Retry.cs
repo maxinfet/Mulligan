@@ -110,12 +110,12 @@ namespace Mulligan
         /// Retries a function until the predicate evaluates false and the function succeeds or until timeout is reached.
         /// </summary>
         /// <typeparam name="TResult">Return type of the function</typeparam>
-        /// <param name="predicate">Predicate that evaluates the results of the function</param>
+        /// <param name="shouldRetry">Predicate that evaluates the results of the function</param>
         /// <param name="function">Function that will be retried</param>
         /// <param name="timeout">Time the action will be retried</param>
         /// <param name="retryInterval">Interval between retries</param>
         /// <returns>Return of the function</returns>
-        public static RetryResults<TResult> While<TResult>(Predicate<TResult> predicate, Func<TResult> function, TimeSpan timeout, TimeSpan? retryInterval = null)
+        public static RetryResults<TResult> While<TResult>(Predicate<TResult> shouldRetry, Func<TResult> function, TimeSpan timeout, TimeSpan? retryInterval = null)
         {
             DateTime start = DateTime.Now;
             RetryResults<TResult> results = new RetryResults<TResult>();
@@ -128,16 +128,21 @@ namespace Mulligan
                 {
                     TResult result = function();
 
-                    results.Retries.Add(new RetryResult<TResult>()
+                    RetryResult<TResult> retryResult = new RetryResult<TResult>()
                     {
                         Start = retryStart,
                         Finish = DateTime.Now,
                         Result = result,
-                        Success = true
-                    });
+                        Success = false
+                    };
 
-                    if (!predicate(result))
+                    results.Retries.Add(retryResult);
+
+                    if (!shouldRetry(result))
+                    {
+                        retryResult.Success = true;
                         return results;
+                    }
 
                     if (IsTimedOut(start, timeout))
                         return results;
@@ -162,39 +167,7 @@ namespace Mulligan
             }
         }
 
-        /// <summary>
-        /// Retries a function until the predicate evaluates false and the function succeeds or until timeout is reached.
-        /// </summary>
-        /// <typeparam name="TResult">Return type of the function</typeparam>
-        /// <param name="predicate">Predicate that evaluates the results of the function</param>
-        /// <param name="function">Function that will be retried</param>
-        /// <param name="tryCatchHandler">Custom exception handling for function</param>
-        /// <param name="timeout">Time the action will be retried</param>
-        /// <param name="retryInterval">Interval between retries</param>
-        /// <returns>Return of the function</returns>
-        public static RetryResults<TResult> While<TResult>(Predicate<TResult> predicate, Func<TResult> function, Func<Func<TResult> tryCatchHandler, RetryResult<TResult>> tryCatchHandler, TimeSpan timeout, TimeSpan? retryInterval = null)
-        {
-            DateTime start = DateTime.Now;
-            RetryResults<TResult> results = new RetryResults<TResult>();
-
-            while (true)
-            {
-                DateTime retryStart = DateTime.Now;
-
-                RetryResult<TResult> result = tryCatchHandler(function);
-
-                results.Retries.Add(result);
-
-                if (!predicate(result.Result))
-                    return results;
-
-                if (IsTimedOut(start, timeout))
-                    return results;
-
-                Thread.Sleep(retryInterval ?? DefaultRetryInterval);
-            }
-        }
-
+        #region Private Helpers
         private static bool IsTimedOut(DateTime startTime, TimeSpan timeout)
         {
             // Check for infinite timeout
@@ -203,5 +176,6 @@ namespace Mulligan
             
             return DateTime.Now.Subtract(startTime) >= timeout;
         }
+        #endregion
     }
 }
