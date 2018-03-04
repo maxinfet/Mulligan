@@ -9,8 +9,10 @@
 This will retry the action until it passes or 1 second passes. Then it will return a `RetryResult` that contains information about each retry that was attempted.
 ``` csharp
 Action action = () => //Do something
-RetryResult retryResult = Retry.While(function, TimeSpan.FromSeconds(1));
-int retryCount = retryResult.GetRetryCount();
+RetryResult retryResult = Retry.While(action, TimeSpan.FromSeconds(1));
+
+int retryCount = retryResult.Count();
+bool isCompletedSuccessfully = retryResult.IsCompletedSuccessfully;
 ```
 
 This will retry the function until the predicate evaluates false. The predicate should return true if you want to retry your function. The `Retry.While` will then return a `RetryResult` that contains the result and information about each retry it attempted.
@@ -18,5 +20,8 @@ This will retry the function until the predicate evaluates false. The predicate 
 Func<T> function = () => //Do something
 Predicate<T> shouldRetry = resultOfFunction => //use the result of the function to evaluate if you should retry
 RetryResult<T> retryResult = Retry.While(shouldRetry, function, TimeSpan.FromSeconds(1));
+
+int retryCount = retryResult.Count();
+bool isCompletedSuccessfully = retryResult.IsCompletedSuccessfully;
 T result = retryResult.GetResult();
 ```
