@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Mulligan.Models
 {
@@ -11,14 +9,29 @@ namespace Mulligan.Models
     
     public class RetryResult
     {
+        /// <summary>
+        /// Start time of the retry
+        /// </summary>
         public DateTime Start { get; set; }
 
+        /// <summary>
+        /// Finish time of the retry
+        /// </summary>
         public DateTime Finish { get; set; }
 
+        /// <summary>
+        /// Duration of the retry
+        /// </summary>
         public TimeSpan Duration => Finish.Subtract(Start);
 
+        /// <summary>
+        /// Exception if any exception was thrown during the retry
+        /// </summary>
         public Exception Exception { get; set; }
 
-        public bool Success { get; set; }
+        /// <summary>
+        /// Whether the retry completed successfully
+        /// </summary>
+        public bool IsCompletedSuccessfully { get; set; }
     }
 }

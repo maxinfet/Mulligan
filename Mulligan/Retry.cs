@@ -4,9 +4,8 @@ using System.Threading;
 
 namespace Mulligan
 {
-    public class Retry
+    public static class Retry
     {
-        public static readonly TimeSpan DefaultRetryFor = TimeSpan.FromMilliseconds(1000);
         private static readonly TimeSpan DefaultRetryInterval = TimeSpan.FromMilliseconds(200);
 
         /// <summary>
@@ -32,7 +31,7 @@ namespace Mulligan
                     {
                         Start = retryStart,
                         Finish = DateTime.Now,
-                        Success = true
+                        IsCompletedSuccessfully = true
                     });
 
                     return results;
@@ -44,7 +43,7 @@ namespace Mulligan
                         Start = retryStart,
                         Finish = DateTime.Now,
                         Exception = exception,
-                        Success = false
+                        IsCompletedSuccessfully = false
                     });
 
                     if (IsTimedOut(start, timeout))
@@ -81,7 +80,7 @@ namespace Mulligan
                         Start = retryStart,
                         Finish = DateTime.Now,
                         Result = function(),
-                        Success = true
+                        IsCompletedSuccessfully = true
                     });
 
                     return results;
@@ -93,7 +92,7 @@ namespace Mulligan
                         Start = retryStart,
                         Finish = DateTime.Now,
                         Exception = exception,
-                        Success = false
+                        IsCompletedSuccessfully = false
                     });
 
                     if (IsTimedOut(start, timeout))
@@ -133,14 +132,14 @@ namespace Mulligan
                         Start = retryStart,
                         Finish = DateTime.Now,
                         Result = result,
-                        Success = false
+                        IsCompletedSuccessfully = false
                     };
 
                     results.Retries.Add(retryResult);
 
                     if (!shouldRetry(result))
                     {
-                        retryResult.Success = true;
+                        retryResult.IsCompletedSuccessfully = true;
                         return results;
                     }
 
@@ -154,7 +153,7 @@ namespace Mulligan
                         Start = retryStart,
                         Finish = DateTime.Now,
                         Exception = exception,
-                        Success = false
+                        IsCompletedSuccessfully = false
                     });
 
                     if (IsTimedOut(start, timeout))

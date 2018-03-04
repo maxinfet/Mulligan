@@ -1,0 +1,190 @@
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
+using System.Linq;
+using Mulligan.Models;
+
+namespace Mulligan.Tests
+{
+    [TestClass]
+    public class RetryTests
+    {
+        [TestMethod]
+        public void RetryWhile_NotFive()
+        {
+            int index = 0;
+            List<int> list = new List<int>() { 1, 2, 3, 5 };
+
+            int Function()
+            {
+                try
+                {
+                    return list[index];
+                }
+                finally
+                {
+                    index++;
+                }
+            }
+
+            bool ShouldRetry(int @int) => @int != 5;
+
+            RetryResults<int> results = Retry.While(ShouldRetry, Function, TimeSpan.FromSeconds(1));
+
+            Assert.AreEqual(1, results.Retries[0].Result);
+            Assert.AreEqual(2, results.Retries[1].Result);
+            Assert.AreEqual(3, results.Retries[2].Result);
+            Assert.AreEqual(5, results.Retries[3].Result);
+            Assert.AreEqual(5, results.GetResult());
+            Assert.AreEqual(4, results.Count());
+            Assert.IsTrue(results.IsCompletedSuccessfully);
+            Assert.IsTrue(results.Failures.All(f => !f.IsCompletedSuccessfully));
+            Assert.IsTrue(results.Retries.All(r => r.Exception is null));
+        }
+
+        [TestMethod]
+        public void RetryWhile_NotIsCompletedSuccessfully()
+        {
+            int index = 0;
+            List<int> list = new List<int>() { 1, 2, 3, 5 };
+
+            int Function()
+            {
+                try
+                {
+                    return list[index];
+                }
+                finally
+                {
+                    index++;
+                }
+            }
+
+            //4 does not exist in the collection so we should fail to find it
+            bool ShouldRetry(int @int) => @int != 4;
+
+            RetryResults<int> results = Retry.While(ShouldRetry, Function, TimeSpan.FromSeconds(1));
+
+            Assert.AreEqual(1, results.Retries[0].Result);
+            Assert.AreEqual(2, results.Retries[1].Result);
+            Assert.AreEqual(3, results.Retries[2].Result);
+            Assert.AreEqual(5, results.Retries[3].Result);
+            Assert.AreEqual(default(int), results.GetResult());
+            Assert.IsNull(results.Result);
+            Assert.IsFalse(results.IsCompletedSuccessfully);
+            Assert.IsTrue(results.Failures.All(f => !f.IsCompletedSuccessfully));
+            Assert.IsTrue(results.Retries.Count(r => r.Exception != null) >= 1);
+        }
+
+        [TestMethod]
+        public void RetryWhile_IsException_NotOne()
+        {
+            int index = 0;
+            List<Func<int>> tasks = new List<Func<int>>
+            {
+                () => throw new Exception("Exception 1"),
+                () => throw new Exception("Exception 2"),
+                () => throw new Exception("Exception 3"),
+                () => 1
+            };
+
+            int Function()
+            {
+                try
+                {
+                    return tasks[index]();
+                }
+                finally
+                {
+                    index++;
+                }
+            }
+
+            bool ShouldRetry(int @int) => @int != 1;
+
+            RetryResults<int> results = Retry.While(ShouldRetry, Function, TimeSpan.FromSeconds(1));
+
+            Assert.IsNotNull(results.Retries[0].Exception);
+            Assert.IsNotNull(results.Retries[1].Exception);
+            Assert.IsNotNull(results.Retries[2].Exception);
+            Assert.IsNull(results.Retries[3].Exception);
+            Assert.AreEqual(1, results.Retries[3].Result);
+            Assert.AreEqual(1, results.GetResult());
+            Assert.AreEqual(tasks.Count, results.Count());
+            Assert.IsTrue(results.IsCompletedSuccessfully);
+            Assert.IsTrue(results.Failures.All(f => !f.IsCompletedSuccessfully));
+        }
+
+        [TestMethod]
+        public void RetryWhile_IsException_NoPredicate()
+        {
+            int index = 0;
+            List<Func<int>> tasks = new List<Func<int>>
+            {
+                () => throw new Exception("Exception 1"),
+                () => throw new Exception("Exception 2"),
+                () => throw new Exception("Exception 3"),
+                () => 1
+            };
+
+            int Function()
+            {
+                try
+                {
+                    return tasks[index]();
+                }
+                finally
+                {
+                    index++;
+                }
+            }
+
+            RetryResults<int> results = Retry.While(Function, TimeSpan.FromSeconds(1));
+
+            Assert.IsNotNull(results.Retries[0].Exception);
+            Assert.IsNotNull(results.Retries[1].Exception);
+            Assert.IsNotNull(results.Retries[2].Exception);
+            Assert.IsNull(results.Retries[3].Exception);
+            Assert.AreEqual(1, results.Retries[3].Result);
+            Assert.AreEqual(1, results.GetResult());
+            Assert.AreEqual(tasks.Count, results.Count());
+            Assert.IsTrue(results.IsCompletedSuccessfully);
+            Assert.IsTrue(results.Failures.All(f => !f.IsCompletedSuccessfully));
+        }
+
+        [TestMethod]
+        public void RetryWhile_IsException_NoResult()
+        {
+            int index = 0;
+            List<Action> tasks = new List<Action>
+            {
+                () => throw new Exception("Exception 1"),
+                () => throw new Exception("Exception 2"),
+                () => throw new Exception("Exception 3"),
+                () => { }
+            };
+
+            void Action()
+            {
+                try
+                {
+                    tasks[index]();
+                }
+                finally
+                {
+                    index++;
+                }
+            }
+
+            RetryResults results = Retry.While(Action, TimeSpan.FromSeconds(1));
+
+            Assert.IsNotNull(results.Retries[0].Exception);
+            Assert.IsNotNull(results.Retries[1].Exception);
+            Assert.IsNotNull(results.Retries[2].Exception);
+            Assert.IsNull(results.Retries[3].Exception);
+            Assert.AreEqual(tasks.Count, results.Count());
+            Assert.IsTrue(results.IsCompletedSuccessfully);
+            Assert.IsTrue(results.Failures.All(f => !f.IsCompletedSuccessfully));
+        }
+    }
+}
