@@ -31,12 +31,12 @@ namespace Mulligan.Tests
 
             RetryResults<int> results = Retry.While(ShouldRetry, Function, TimeSpan.FromSeconds(1));
 
-            Assert.AreEqual(1, results.Retries[0].Result);
-            Assert.AreEqual(2, results.Retries[1].Result);
-            Assert.AreEqual(3, results.Retries[2].Result);
-            Assert.AreEqual(5, results.Retries[3].Result);
-            Assert.AreEqual(5, results.GetResult());
-            Assert.AreEqual(4, results.Count());
+            Assert.AreEqual(1, results.Retries[0].Value);
+            Assert.AreEqual(2, results.Retries[1].Value);
+            Assert.AreEqual(3, results.Retries[2].Value);
+            Assert.AreEqual(5, results.Retries[3].Value);
+            Assert.AreEqual(5, results.Result.Value);
+            Assert.AreEqual(4, results.Count);
             Assert.IsTrue(results.IsCompletedSuccessfully);
             Assert.IsTrue(results.Failures.All(f => !f.IsCompletedSuccessfully));
             Assert.IsTrue(results.Retries.All(r => r.Exception is null));
@@ -65,11 +65,11 @@ namespace Mulligan.Tests
 
             RetryResults<int> results = Retry.While(ShouldRetry, Function, TimeSpan.FromSeconds(1));
 
-            Assert.AreEqual(1, results.Retries[0].Result);
-            Assert.AreEqual(2, results.Retries[1].Result);
-            Assert.AreEqual(3, results.Retries[2].Result);
-            Assert.AreEqual(5, results.Retries[3].Result);
-            Assert.AreEqual(default(int), results.GetResult());
+            Assert.AreEqual(1, results.Retries[0].Value);
+            Assert.AreEqual(2, results.Retries[1].Value);
+            Assert.AreEqual(3, results.Retries[2].Value);
+            Assert.AreEqual(5, results.Retries[3].Value);
+            Assert.AreEqual(default(int), results.Result.Value);
             Assert.IsNull(results.Result);
             Assert.IsFalse(results.IsCompletedSuccessfully);
             Assert.IsTrue(results.Failures.All(f => !f.IsCompletedSuccessfully));
@@ -108,9 +108,9 @@ namespace Mulligan.Tests
             Assert.IsNotNull(results.Retries[1].Exception);
             Assert.IsNotNull(results.Retries[2].Exception);
             Assert.IsNull(results.Retries[3].Exception);
-            Assert.AreEqual(1, results.Retries[3].Result);
-            Assert.AreEqual(1, results.GetResult());
-            Assert.AreEqual(tasks.Count, results.Count());
+            Assert.AreEqual(1, results.Retries[3].Value);
+            Assert.AreEqual(1, results.Result.Value);
+            Assert.AreEqual(tasks.Count, results.Count);
             Assert.IsTrue(results.IsCompletedSuccessfully);
             Assert.IsTrue(results.Failures.All(f => !f.IsCompletedSuccessfully));
         }
@@ -145,9 +145,9 @@ namespace Mulligan.Tests
             Assert.IsNotNull(results.Retries[1].Exception);
             Assert.IsNotNull(results.Retries[2].Exception);
             Assert.IsNull(results.Retries[3].Exception);
-            Assert.AreEqual(1, results.Retries[3].Result);
-            Assert.AreEqual(1, results.GetResult());
-            Assert.AreEqual(tasks.Count, results.Count());
+            Assert.AreEqual(1, results.Retries[3].Value);
+            Assert.AreEqual(1, results.Result.Value);
+            Assert.AreEqual(tasks.Count, results.Count);
             Assert.IsTrue(results.IsCompletedSuccessfully);
             Assert.IsTrue(results.Failures.All(f => !f.IsCompletedSuccessfully));
         }
@@ -182,7 +182,7 @@ namespace Mulligan.Tests
             Assert.IsNotNull(results.Retries[1].Exception);
             Assert.IsNotNull(results.Retries[2].Exception);
             Assert.IsNull(results.Retries[3].Exception);
-            Assert.AreEqual(tasks.Count, results.Count());
+            Assert.AreEqual(tasks.Count, results.Count);
             Assert.IsTrue(results.IsCompletedSuccessfully);
             Assert.IsTrue(results.Failures.All(f => !f.IsCompletedSuccessfully));
         }

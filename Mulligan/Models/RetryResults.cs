@@ -12,29 +12,27 @@ namespace Mulligan.Models
         /// <returns>Returns the value of the result, if all retries failed the result will be the default value for the type.</returns>
         public TResult GetResult() => Retries.Last().Result;
 
-        /// <summary>
-        /// The total amount of retries attempted
-        /// </summary>
-        /// <returns>The total amount of retries attempted</returns>
-        public override int Count() => Retries.Count();
+        /// <inheritdoc />
+        public override TimeSpan GetDuration => new TimeSpan(Retries.Sum(r => r.Duration.Ticks));
 
-        /// <summary>
-        /// Checks that the last result is a success
-        /// </summary>
+        /// <inheritdoc />
+        public override int Count => Retries.Count();
+
+        /// <inheritdoc />
         public override bool IsCompletedSuccessfully => Result?.IsCompletedSuccessfully ?? false;
 
         /// <summary>
-        /// Collection of all retries that failed
+        /// Returns a new List object that contains all the RetryResult with a IsCompleteSuccessfully of false
         /// </summary>
         public new List<RetryResult<TResult>> Failures => Retries.Where(r => r.IsCompletedSuccessfully == false).ToList();
 
         /// <summary>
-        /// Result of the retry if successful otherwise returns null
+        /// Returns the only RetryResult that was successful or null if no results were successful
         /// </summary>
         public new RetryResult<TResult> Result => Retries.SingleOrDefault(r => r.IsCompletedSuccessfully);
 
         /// <summary>
-        /// Collection of all retries including success and failures
+        /// Returns a new List object that contains all the RetryResult
         /// </summary>
         public new List<RetryResult<TResult>> Retries { get; } = new List<RetryResult<TResult>>();
     }
@@ -42,33 +40,37 @@ namespace Mulligan.Models
     public class RetryResults
     {
         /// <summary>
-        /// The sum of all the retries
+        /// Returns a new TimeSpan object whose value is the sum of the TimeSpans of all the RetryResult
         /// </summary>
-        public TimeSpan GetDuration => new TimeSpan(Retries.Sum(r => r.Duration.Ticks));
+        public virtual TimeSpan GetDuration => new TimeSpan(Retries.Sum(r => r.Duration.Ticks));
 
         /// <summary>
-        /// The total amount of retries attempted
+        /// Gets the number of Retries contained in the RetryResults
         /// </summary>
-        /// <returns>The total amount of retries attempted</returns>
-        public virtual int Count() => Retries.Count();
+        public virtual int Count => Retries.Count();
 
         /// <summary>
-        /// Checks that the last result is a success
+        /// Gets whether the last result has completed successfully
         /// </summary>
         public virtual bool IsCompletedSuccessfully => Result?.IsCompletedSuccessfully ?? false;
 
         /// <summary>
-        /// Collection of all retries that failed
+        /// Gets whether the last result has completed due to an unhandled exception
+        /// </summary>
+        public virtual bool IsFaulted => Result?.IsFaulted ?? false;
+
+        /// <summary>
+        /// Returns a new List object that contains all the RetryResult with a IsCompleteSuccessfully of false
         /// </summary>
         public List<RetryResult> Failures => Retries.Where(r => r.IsCompletedSuccessfully == false).ToList();
 
         /// <summary>
-        /// Result of the retry if successful otherwise returns null
+        /// Returns the only RetryResult that was successful or null if no results were successful
         /// </summary>
         public RetryResult Result => Retries.SingleOrDefault(r => r.IsCompletedSuccessfully);
 
         /// <summary>
-        /// Collection of all retries including success and failures
+        /// Returns a new List object that contains all the RetryResult
         /// </summary>
         public List<RetryResult> Retries { get; } = new List<RetryResult>();
     }

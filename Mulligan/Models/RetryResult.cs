@@ -4,7 +4,7 @@ namespace Mulligan.Models
 {
     public sealed class RetryResult<TResult> : RetryResult
     {
-        public TResult Result { get; set; }
+        public TResult Result { get; internal set; }
     }
     
     public class RetryResult
@@ -12,12 +12,12 @@ namespace Mulligan.Models
         /// <summary>
         /// Start time of the retry
         /// </summary>
-        public DateTime Start { get; set; }
+        public DateTime Start { get; internal set; }
 
         /// <summary>
         /// Finish time of the retry
         /// </summary>
-        public DateTime Finish { get; set; }
+        public DateTime Finish { get; internal set; }
 
         /// <summary>
         /// Duration of the retry
@@ -27,11 +27,16 @@ namespace Mulligan.Models
         /// <summary>
         /// Exception if any exception was thrown during the retry
         /// </summary>
-        public Exception Exception { get; set; }
+        public Exception Exception { get; internal set; }
 
         /// <summary>
-        /// Whether the retry completed successfully
+        /// Gets whether the retry completed successfully
         /// </summary>
-        public bool IsCompletedSuccessfully { get; set; }
+        public bool IsCompletedSuccessfully { get; internal set; }
+
+        /// <summary>
+        /// Gets whether the retry completed due to an unhandled exception
+        /// </summary>
+        public bool IsFaulted { get; internal set; }
     }
 }
