@@ -69,7 +69,6 @@ namespace Mulligan.Tests
             Assert.AreEqual(2, results.Retries[1].Value);
             Assert.AreEqual(3, results.Retries[2].Value);
             Assert.AreEqual(5, results.Retries[3].Value);
-            Assert.AreEqual(default(int), results.Result.Value);
             Assert.IsNull(results.Result);
             Assert.IsFalse(results.IsCompletedSuccessfully);
             Assert.IsTrue(results.Failures.All(f => !f.IsCompletedSuccessfully));
