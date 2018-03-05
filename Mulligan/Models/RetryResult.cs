@@ -4,7 +4,7 @@ namespace Mulligan.Models
 {
     public sealed class RetryResult<TResult> : RetryResult
     {
-        public TResult Result { get; internal set; }
+        public TResult Value { get; internal set; }
     }
     
     public class RetryResult
