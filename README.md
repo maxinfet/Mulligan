@@ -11,7 +11,7 @@ This will retry the action until it passes or 1 second passes. Then it will retu
 Action action = () => //Do something
 RetryResult retryResult = Retry.While(action, TimeSpan.FromSeconds(1));
 
-int retryCount = retryResult.Count();
+int retryCount = retryResult.Count;
 bool isCompletedSuccessfully = retryResult.IsCompletedSuccessfully;
 ```
 
@@ -21,7 +21,7 @@ Func<T> function = () => //Do something
 Predicate<T> shouldRetry = resultOfFunction => //use the result of the function to evaluate if you should retry
 RetryResult<T> retryResult = Retry.While(shouldRetry, function, TimeSpan.FromSeconds(1));
 
-int retryCount = retryResult.Count();
+int retryCount = retryResult.Count;
 bool isCompletedSuccessfully = retryResult.IsCompletedSuccessfully;
-T result = retryResult.GetResult();
+T result = retryResult.Result.Value;
 ```
