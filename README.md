@@ -1,3 +1,6 @@
+- <a href="https://www.nuget.org/packages/Mulligan/2.0.0">Nuget Package</a>
+- <a href="https://github.com/maxinfet/Mulligan/releases">Releases</a>
+
 ### Introduction
 <p>Mulligan is a library that defines generic retry logic. This code is inspired by the retry code in FlaUI, TestStack.White and some feed back from a co-worker.</p>
 
