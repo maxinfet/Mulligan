@@ -10,7 +10,7 @@ namespace Mulligan.Models
         /// Returns the Result by getting the value of the last Retry.
         /// </summary>
         /// <returns>Returns the value of the result, if all retries failed the result will be the default value for the type.</returns>
-        public TResult GetResult() => Retries.Last().Result;
+        public TResult GetResult() => Retries.Last().Value;
 
         /// <inheritdoc />
         public override TimeSpan GetDuration => new TimeSpan(Retries.Sum(r => r.Duration.Ticks));

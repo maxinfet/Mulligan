@@ -79,7 +79,7 @@ namespace Mulligan
                     {
                         Start = retryStart,
                         Finish = DateTime.Now,
-                        Result = function(),
+                        Value = function(),
                         IsCompletedSuccessfully = true
                     });
 
@@ -131,7 +131,7 @@ namespace Mulligan
                     {
                         Start = retryStart,
                         Finish = DateTime.Now,
-                        Result = result,
+                        Value = result,
                         IsCompletedSuccessfully = false
                     };
 
