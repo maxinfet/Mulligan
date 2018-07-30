@@ -49,10 +49,8 @@ namespace Mulligan
                     if (IsTimedOut(start, timeout))
                         return results;
                 }
-                finally
-                {
-                    Thread.Sleep(retryInterval ?? DefaultRetryInterval);
-                }
+
+                Thread.Sleep(retryInterval ?? DefaultRetryInterval);
             }
         }
 
@@ -98,10 +96,8 @@ namespace Mulligan
                     if (IsTimedOut(start, timeout))
                         return results;
                 }
-                finally
-                {
-                    Thread.Sleep(retryInterval ?? DefaultRetryInterval);
-                }
+
+                Thread.Sleep(retryInterval ?? DefaultRetryInterval);
             }
         }
 
@@ -159,10 +155,8 @@ namespace Mulligan
                     if (IsTimedOut(start, timeout))
                         return results;
                 }
-                finally
-                {
-                    Thread.Sleep(retryInterval ?? DefaultRetryInterval);
-                }
+
+                Thread.Sleep(retryInterval ?? DefaultRetryInterval);
             }
         }
 
