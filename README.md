@@ -1,6 +1,6 @@
 [![Build Status](https://dev.azure.com/maxdiplomat/Mulligan/_apis/build/status/maxinfet.Mulligan?branchName=master)](https://dev.azure.com/maxdiplomat/Mulligan/_build/latest?definitionId=1&branchName=master)
 
-- <a href="https://www.nuget.org/packages/Mulligan/2.0.0">Nuget Package</a>
+- <a href="https://www.nuget.org/packages/Mulligan/">Nuget Package</a>
 - <a href="https://github.com/maxinfet/Mulligan/releases">Releases</a>
 
 ### Introduction
