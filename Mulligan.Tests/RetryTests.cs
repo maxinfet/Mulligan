@@ -3,6 +3,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
 using Mulligan.Models;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Mulligan.Tests
 {
@@ -184,6 +186,126 @@ namespace Mulligan.Tests
          Assert.AreEqual(tasks.Count, results.Count);
          Assert.IsTrue(results.IsCompletedSuccessfully);
          Assert.IsTrue(results.Failures.All(f => !f.IsCompletedSuccessfully));
+      }
+
+      [TestMethod]
+      public void RetryWhile_CancelRetry_Action()
+      {
+         CancellationTokenSource tokenSource = new CancellationTokenSource();
+
+         int index = 0;
+
+         List<Action> tasks = new List<Action>
+            {
+               () => throw new Exception("Exception 1"),
+               () => throw new Exception("Exception 2"),
+               () =>
+               {
+                  tokenSource.Cancel();
+                  throw new Exception("Exception 3");
+               },
+               () => { }
+            };
+
+         void Action()
+         {
+            try
+            {
+               tasks[index]();
+            }
+            finally
+            {
+               index++;
+            }
+         }
+
+         RetryResults results = Retry.While(Action, TimeSpan.FromSeconds(1), null, tokenSource.Token);
+
+         Assert.IsTrue(results.IsCanceled);
+         Assert.IsFalse(results.IsCompletedSuccessfully);
+         Assert.IsNotNull(results.Result.Exception);
+         Assert.IsTrue(results.Result.Exception is OperationCanceledException);
+         Assert.IsTrue(results.GetDuration < TimeSpan.FromSeconds(1));
+      }
+
+      [TestMethod]
+      public void RetryWhile_CancelRetry_NoPredicate()
+      {
+         CancellationTokenSource tokenSource = new CancellationTokenSource();
+
+         int index = 0;
+         List<Func<int>> tasks = new List<Func<int>>
+            {
+                () => throw new Exception("Exception 1"),
+                () => throw new Exception("Exception 2"),
+                () =>
+                {
+                   tokenSource.Cancel();
+                   throw new Exception("Exception 3");
+                },
+                () => 1
+            };
+
+         int Function()
+         {
+            try
+            {
+               return tasks[index]();
+            }
+            finally
+            {
+               index++;
+            }
+         }
+
+         RetryResults<int> results = Retry.While(Function, TimeSpan.FromSeconds(1), null, tokenSource.Token);
+
+         Assert.IsTrue(results.IsCanceled);
+         Assert.IsFalse(results.IsCompletedSuccessfully);
+         Assert.IsNotNull(results.Result.Exception);
+         Assert.IsTrue(results.Result.Exception is OperationCanceledException);
+         Assert.IsTrue(results.GetDuration < TimeSpan.FromSeconds(1));
+      }
+
+      [TestMethod]
+      public void RetryWhile_CancelRetry_Predicate()
+      {
+         CancellationTokenSource tokenSource = new CancellationTokenSource();
+
+         int index = 0;
+         List<Func<bool>> tasks = new List<Func<bool>>
+            {
+               () => false,
+               () => false,
+               () =>
+               {
+                  tokenSource.Cancel();
+                  return false;
+               },
+               () => true
+            };
+
+         bool Function()
+         {
+            try
+            {
+               return tasks[index]();
+            }
+            finally
+            {
+               index++;
+            }
+         }
+
+         bool ShouldRetry(bool @bool) => !@bool;
+
+         RetryResults<bool> results = Retry.While(ShouldRetry, Function, TimeSpan.FromSeconds(1), null, tokenSource.Token);
+
+         Assert.IsTrue(results.IsCanceled);
+         Assert.IsFalse(results.IsCompletedSuccessfully);
+         Assert.IsNotNull(results.Result.Exception);
+         Assert.IsTrue(results.Result.Exception is OperationCanceledException);
+         Assert.IsTrue(results.GetDuration < TimeSpan.FromSeconds(1));
       }
    }
 }

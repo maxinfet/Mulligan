@@ -38,5 +38,10 @@ namespace Mulligan.Models
       /// Gets whether the retry completed due to an unhandled exception
       /// </summary>
       public bool IsFaulted { get; internal set; }
+
+      /// <summary>
+      /// Gets whether the retry was canceled
+      /// </summary>
+      public bool IsCanceled { get; internal set; }
    }
 }

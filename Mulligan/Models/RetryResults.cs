@@ -15,6 +15,9 @@ namespace Mulligan.Models
       /// <inheritdoc />
       public override bool IsCompletedSuccessfully => Result?.IsCompletedSuccessfully ?? false;
 
+      /// <inheritdoc />
+      public override bool IsCanceled => Result?.IsCanceled ?? false;
+
       /// <summary>
       /// Returns a new List object that contains all the RetryResult with a IsCompleteSuccessfully of false
       /// </summary>
@@ -52,6 +55,11 @@ namespace Mulligan.Models
       /// Gets whether the last result has completed due to an unhandled exception
       /// </summary>
       public virtual bool IsFaulted => Result?.IsFaulted ?? false;
+
+      /// <summary>
+      /// Gets wheter the last result was canceled
+      /// </summary>
+      public virtual bool IsCanceled => Result?.IsCanceled ?? false;
 
       /// <summary>
       /// Returns a new List object that contains all the RetryResult with a IsCompleteSuccessfully of false

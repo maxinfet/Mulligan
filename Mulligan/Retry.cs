@@ -14,7 +14,8 @@ namespace Mulligan
       /// <param name="action">Action that will be retried</param>
       /// <param name="timeout">Time the action will be retried</param>
       /// <param name="retryInterval">Interval between retries</param>
-      public static RetryResults While(Action action, TimeSpan timeout, TimeSpan? retryInterval = null)
+      /// <param name="cancellationToken">Token to cancel retry operation</param>
+      public static RetryResults While(Action action, TimeSpan timeout, TimeSpan? retryInterval = null, CancellationToken cancellationToken = new CancellationToken())
       {
          DateTime start = DateTime.Now;
          RetryResults results = new RetryResults();
@@ -26,9 +27,18 @@ namespace Mulligan
 
             try
             {
+               if (cancellationToken.IsCancellationRequested)
+                  cancellationToken.ThrowIfCancellationRequested();
+
                action();
 
                result.IsCompletedSuccessfully = true;
+            }
+            catch (OperationCanceledException canceledException)
+            {
+               result.Exception = canceledException;
+               result.IsCompletedSuccessfully = false;
+               result.IsCanceled = true;
             }
             catch (Exception exception)
             {
@@ -43,6 +53,9 @@ namespace Mulligan
             }
 
             if (result.IsCompletedSuccessfully)
+               return results;
+
+            if (result.IsCanceled)
                return results;
 
             if (IsTimedOut(start, timeout))
@@ -59,8 +72,9 @@ namespace Mulligan
       /// <param name="function">Function that will be retried</param>
       /// <param name="timeout">Time the action will be retried</param>
       /// <param name="retryInterval">Interval between retries</param>
+      /// <param name="cancellationToken">Token to cancel retry operation</param>
       /// <returns>Return of the function</returns>
-      public static RetryResults<TResult> While<TResult>(Func<TResult> function, TimeSpan timeout, TimeSpan? retryInterval = null)
+      public static RetryResults<TResult> While<TResult>(Func<TResult> function, TimeSpan timeout, TimeSpan? retryInterval = null, CancellationToken cancellationToken = new CancellationToken())
       {
          DateTime start = DateTime.Now;
          RetryResults<TResult> results = new RetryResults<TResult>();
@@ -72,8 +86,17 @@ namespace Mulligan
 
             try
             {
+               if (cancellationToken.IsCancellationRequested)
+                  cancellationToken.ThrowIfCancellationRequested();
+
                result.Value = function();
                result.IsCompletedSuccessfully = true;
+            }
+            catch(OperationCanceledException canceledException)
+            {
+               result.Exception = canceledException;
+               result.IsCompletedSuccessfully = false;
+               result.IsCanceled = true;
             }
             catch (Exception exception)
             {
@@ -88,6 +111,9 @@ namespace Mulligan
             }
 
             if (result.IsCompletedSuccessfully)
+               return results;
+
+            if (result.IsCanceled)
                return results;
 
             if (IsTimedOut(start, timeout))
@@ -105,8 +131,9 @@ namespace Mulligan
       /// <param name="function">Function that will be retried</param>
       /// <param name="timeout">Time the action will be retried</param>
       /// <param name="retryInterval">Interval between retries</param>
+      /// <param name="cancellationToken">Token to cancel retry operation</param>
       /// <returns>Return of the function</returns>
-      public static RetryResults<TResult> While<TResult>(Predicate<TResult> shouldRetry, Func<TResult> function, TimeSpan timeout, TimeSpan? retryInterval = null)
+      public static RetryResults<TResult> While<TResult>(Predicate<TResult> shouldRetry, Func<TResult> function, TimeSpan timeout, TimeSpan? retryInterval = null, CancellationToken cancellationToken = new CancellationToken())
       {
          DateTime start = DateTime.Now;
          RetryResults<TResult> results = new RetryResults<TResult>();
@@ -118,9 +145,18 @@ namespace Mulligan
 
             try
             {
+               if (cancellationToken.IsCancellationRequested)
+                  cancellationToken.ThrowIfCancellationRequested();
+
                result.Value = function();
                if (!shouldRetry(result.Value))
                   result.IsCompletedSuccessfully = true;
+            }
+            catch(OperationCanceledException canceledException)
+            {
+               result.Exception = canceledException;
+               result.IsCompletedSuccessfully = false;
+               result.IsCanceled = true;
             }
             catch (Exception exception)
             {
@@ -135,6 +171,9 @@ namespace Mulligan
             }
 
             if (result.IsCompletedSuccessfully)
+               return results;
+
+            if (result.IsCanceled)
                return results;
 
             if (IsTimedOut(start, timeout))
