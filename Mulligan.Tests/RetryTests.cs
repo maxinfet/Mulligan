@@ -189,23 +189,37 @@ namespace Mulligan.Tests
       }
 
       [TestMethod]
-      public async Task RetryWhile_CancelRetry_ActionAsync()
+      public void RetryWhile_CancelRetry_Action()
       {
          CancellationTokenSource tokenSource = new CancellationTokenSource();
 
-         int count = 0;
+         int index = 0;
+
+         List<Action> tasks = new List<Action>
+            {
+               () => throw new Exception("Exception 1"),
+               () => throw new Exception("Exception 2"),
+               () =>
+               {
+                  tokenSource.Cancel();
+                  throw new Exception("Exception 3");
+               },
+               () => { }
+            };
 
          void Action()
          {
-            throw new Exception($"Exception {++count}");
+            try
+            {
+               tasks[index]();
+            }
+            finally
+            {
+               index++;
+            }
          }
 
-         Task<RetryResults> task = Task.Run(() => Retry.While(Action, TimeSpan.FromSeconds(1), null, tokenSource.Token));
-
-         Thread.Sleep(400);
-         tokenSource.Cancel();
-
-         RetryResults results = await task;
+         RetryResults results = Retry.While(Action, TimeSpan.FromSeconds(1), null, tokenSource.Token);
 
          Assert.IsTrue(results.IsCanceled);
          Assert.IsFalse(results.IsCompletedSuccessfully);
@@ -215,7 +229,7 @@ namespace Mulligan.Tests
       }
 
       [TestMethod]
-      public async Task RetryWhile_CancelRetry_NoPredicate()
+      public void RetryWhile_CancelRetry_NoPredicate()
       {
          CancellationTokenSource tokenSource = new CancellationTokenSource();
 
@@ -224,7 +238,11 @@ namespace Mulligan.Tests
             {
                 () => throw new Exception("Exception 1"),
                 () => throw new Exception("Exception 2"),
-                () => throw new Exception("Exception 3"),
+                () =>
+                {
+                   tokenSource.Cancel();
+                   throw new Exception("Exception 3");
+                },
                 () => 1
             };
 
@@ -240,12 +258,7 @@ namespace Mulligan.Tests
             }
          }
 
-         Task<RetryResults<int>> task = Task.Run(() => Retry.While(Function, TimeSpan.FromSeconds(1), null, tokenSource.Token));
-
-         Thread.Sleep(400);
-         tokenSource.Cancel();
-
-         RetryResults<int> results = await task;
+         RetryResults<int> results = Retry.While(Function, TimeSpan.FromSeconds(1), null, tokenSource.Token);
 
          Assert.IsTrue(results.IsCanceled);
          Assert.IsFalse(results.IsCompletedSuccessfully);
@@ -255,23 +268,38 @@ namespace Mulligan.Tests
       }
 
       [TestMethod]
-      public async Task RetryWhile_CancelRetry_Predicate()
+      public void RetryWhile_CancelRetry_Predicate()
       {
          CancellationTokenSource tokenSource = new CancellationTokenSource();
 
+         int index = 0;
+         List<Func<bool>> tasks = new List<Func<bool>>
+            {
+               () => false,
+               () => false,
+               () =>
+               {
+                  tokenSource.Cancel();
+                  return false;
+               },
+               () => true
+            };
+
          bool Function()
          {
-            return false;
+            try
+            {
+               return tasks[index]();
+            }
+            finally
+            {
+               index++;
+            }
          }
 
          bool ShouldRetry(bool @bool) => !@bool;
 
-         Task<RetryResults<bool>> task = Task.Run(() => Retry.While(ShouldRetry, Function, TimeSpan.FromSeconds(1), null, tokenSource.Token));
-
-         Thread.Sleep(400);
-         tokenSource.Cancel();
-
-         RetryResults<bool> results = await task;
+         RetryResults<bool> results = Retry.While(ShouldRetry, Function, TimeSpan.FromSeconds(1), null, tokenSource.Token);
 
          Assert.IsTrue(results.IsCanceled);
          Assert.IsFalse(results.IsCompletedSuccessfully);
